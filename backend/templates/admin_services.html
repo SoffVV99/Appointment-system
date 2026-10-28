@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление на услуги</title>
+</head>
+<body style="font-family: sans-serif; padding: 20px; max-width: 900px; margin: auto;">
+    <a href="/admin">← Назад към графика</a>
+    <h2>Управление на услуги</h2>
+    
+    <form id="addService" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; background: #f9f9f9; padding: 15px; border-radius: 8px;">
+        <input type="hidden" id="serviceId">
+        <input type="text" id="name" placeholder="Процедура (напр. Боядисване L'Oreal)" required style="padding:8px; flex: 1; min-width: 150px;">
+        <input type="number" id="dur" placeholder="Мин." required style="padding:8px; width:70px;">
+        <input type="text" id="price" placeholder="Цена" required style="padding:8px; width:110px;">
+        
+        <select id="category" required style="padding:8px;" onchange="toggleSubcategory()">
+            <option value="">-- Категория --</option>
+            <option value="Дамско">Дамско</option>
+            <option value="Мъжко">Мъжко</option>
+            <option value="Детско">Детско</option>
+        </select>
+
+        <!-- Меню за подкатегории (показва се само при избор на Дамско) -->
+        <select id="subcategory" style="padding:8px; display:none;">
+            <option value="">-- Подкатегория --</option>
+            <option value="Подстригване">Подстригване</option>
+            <option value="Измиване">Измиване</option>
+            <option value="Сешоар">Сешоар</option>
+            <option value="Боя">Боя</option>
+            <option value="Прическа">Прическа</option>
+        </select>
+
+        <select id="staff" required style="padding:8px;"><option value="">Зареждане...</option></select>
+        
+        <button type="submit" id="submitBtn" style="padding:8px 15px; background:#27ae60; color:white; border:none; cursor:pointer; border-radius: 4px;">Добави</button>
+        <button type="button" id="cancelEditBtn" onclick="resetForm()" style="display:none; padding:8px 15px; background:#7f8c8d; color:white; border:none; cursor:pointer; border-radius: 4px;">Отказ</button>
+    </form>
+
+    <ul id="list" style="list-style:none; padding:0;"></ul>
+
+    <script>
+        async function init() {
+            const res = await fetch('/api/staff'); 
+            const staff = await res.json();
+            document.getElementById('staff').innerHTML = staff.map(s => `<option value="${s.name} (${s.role})">${s.name} (${s.role})</option>`).join('');
+            load();
+        }
+
+        function toggleSubcategory() {
+            const cat = document.getElementById('category').value;
+            const sub = document.getElementById('subcategory');
+            if (cat === 'Дамско') {
+                sub.style.display = 'inline-block';
+            } else {
+                sub.style.display = 'none';
+                sub.value = '';
+            }
+        }
+
+        async function load() {
+            const r = await fetch('/api/services'); 
+            const d = await r.json();
+            document.getElementById('list').innerHTML = d.map(s => `
+                <li style="padding:10px; border-bottom:1px solid #ccc; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>[${s.category || 'Общи'}${s.subcategory ? ' / ' + s.subcategory : ''}]</strong> 
+                        ${s.name} (${s.duration_minutes} мин) - 
+                        <b style="color: #27ae60;">€ ${s.price}</b> 
+                        <span style="color: #7f8c8d; font-size: 13px;">(${s.staff_role})</span>
+                    </div>
+                    <div>
+                        <button onclick='editService(${JSON.stringify(s)})' style="background:#f39c12; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius: 4px; margin-right: 5px;">Редактирай</button>
+                        <button onclick="del(${s.id})" style="background:#e74c3c; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius: 4px;">Изтрий</button>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        function editService(s) {
+            document.getElementById('serviceId').value = s.id;
+            document.getElementById('name').value = s.name;
+            document.getElementById('dur').value = s.duration_minutes;
+            document.getElementById('price').value = s.price;
+            document.getElementById('category').value = s.category || '';
+            
+            toggleSubcategory(); // Показва или скрива подкатегорията според категорията
+            document.getElementById('subcategory').value = s.subcategory || '';
+            document.getElementById('staff').value = s.staff_role;
+            
+            document.getElementById('submitBtn').innerText = 'Запази промените';
+            document.getElementById('submitBtn').style.background = '#f39c12';
+            document.getElementById('cancelEditBtn').style.display = 'inline-block';
+        }
+
+        function resetForm() {
+            document.getElementById('addService').reset();
+            document.getElementById('serviceId').value = '';
+            document.getElementById('subcategory').style.display = 'none';
+            document.getElementById('submitBtn').innerText = 'Добави';
+            document.getElementById('submitBtn').style.background = '#27ae60';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        }
+
+        document.getElementById('addService').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const serviceId = document.getElementById('serviceId').value;
+            const payload = {
+                name: document.getElementById('name').value,
+                duration_minutes: document.getElementById('dur').value,
+                price: document.getElementById('price').value,
+                category: document.getElementById('category').value,
+                subcategory: document.getElementById('subcategory').value,
+                staff_role: document.getElementById('staff').value
+            };
+
+            let url = '/api/add_service';
+            let method = 'POST';
+
+            if (serviceId) {
+                url = `/api/edit_service/${serviceId}`;
+                method = 'PUT';
+            }
+
+            const response = await fetch(url, { 
+                method: method, 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(payload) 
+            });
+
+            if (response.ok) {
+                resetForm();
+                load();
+            } else {
+                alert('Грешка при запис на услугата!');
+            }
+        };
+
+        async function del(id) { 
+            if(confirm('Сигурни ли сте, че искате да изтриете тази услуга?')) {
+                await fetch(`/api/delete_service/${id}`, { method: 'DELETE' }); 
+                load(); 
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

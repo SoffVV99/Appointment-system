@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head><meta charset="UTF-8"><title>Ценоразпис</title></head>
+<body style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 40px; text-align: center;">
+    <img src="/static/logo.jpg" alt="Лого" style="max-width: 120px; border-radius: 50%;">
+    <h2>Ценоразпис Deni Style</h2>
+    <div id="list" style="text-align: left; margin: 30px 0;"></div>
+    <div style="margin-top: 40px; border-top: 2px solid #000; padding-top: 20px;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.denistyle.bg" alt="QR">
+        <p>Сканирай за запазване на час онлайн:<br><b>www.denistyle.bg</b></p>
+    </div>
+    <script>
+        async function loadPricelist() {
+            const staffRes = await fetch('/api/staff');
+            const staffList = await staffRes.json();
+            
+            const servicesRes = await fetch('/api/services');
+            const servicesList = await servicesRes.json();
+
+            let html = '';
+
+            staffList.forEach(person => {
+                // Взимаме услугите за конкретния специалист
+                const personServices = servicesList.filter(s => s.staff_role.includes(person.role));
+
+                if (personServices.length > 0) {
+                    // Главно заглавие: Име - Роля (напр. Деница - Фризьор)
+                    html += `
+                        <div style="margin-bottom: 40px; text-align: left;">
+                            <h2 style="border-bottom: 3px solid #00b894; padding-bottom: 5px; color: #2c3e50; margin-bottom: 15px;">${person.name} - ${person.role}</h2>
+                    `;
+
+                    // Групиране по категории и подкатегории
+                    const categories = {};
+                    personServices.forEach(s => {
+                        const cat = s.category || 'Други';
+                        if (!categories[cat]) categories[cat] = {};
+
+                        const subcat = s.subcategory || 'none';
+                        if (!categories[cat][subcat]) categories[cat][subcat] = [];
+
+                        categories[cat][subcat].push(s);
+                    });
+
+                    // Извеждане на категориите
+                    for (const cat in categories) {
+                        html += `<h3 style="color: #2980b9; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 3px;">${cat}:</h3>`;
+
+                        // Извеждане на подкатегориите
+                        for (const subcat in categories[cat]) {
+                            let indent = '15px'; // Отстъп, ако няма подкатегория
+
+                            if (subcat !== 'none') {
+                                html += `<h4 style="color: #8e44ad; margin-left: 15px; margin-top: 10px; margin-bottom: 5px;">${subcat}:</h4>`;
+                                indent = '30px'; // По-голям отстъп за услугите вътре в подкатегорията
+                            }
+
+                            // Извеждане на самите услуги
+                            const services = categories[cat][subcat];
+                            services.forEach(s => {
+                                html += `
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-left: ${indent}; margin-bottom: 8px; font-size: 16px; border-bottom: 1px dotted #f1f2f6; padding-bottom: 5px;">
+                                        <span>
+                                            ${s.name} <small style="color:#666;">(${s.duration_minutes} мин)</small>
+                                        </span>
+                                        <b style="white-space: nowrap; color: #27ae60;">€ ${s.price}</b>
+                                    </div>
+                                `;
+                            });
+                        }
+                    }
+
+                    html += `</div>`;
+                }
+            });
+
+            document.getElementById('list').innerHTML = html;
+        }
+
+        loadPricelist();
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>График | Deni Style</title>
+    <!-- Това прави сайта готов за инсталиране като приложение на телефона -->
+    <link rel="manifest" href="/static/manifest.json">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; color: #333; }
+        h1 { color: #b8860b; text-align: center; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f4e8d1; color: #5a3d28; }
+        .btn-cancel { background: #d9534f; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
+        .btn-cancel:hover { background: #c9302c; }
+    </style>
+</head>
+<body>
+
+    <h1>График на записванията</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Дата и час</th>
+                <th>Служител</th>
+                <th>Услуга</th>
+                <th>Телефон на клиент</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Тук динамично ще се зареждат часовете от базата данни -->
+            {% for appt in appointments %}
+            <tr>
+                <td>{{ appt.start_time }}</td>
+                <td>{{ appt.staff_name }}</td>
+                <td>{{ appt.service_name }}</td>
+                <td>{{ appt.client_phone }}</td>
+                <td>
+                    <button class="btn-cancel" onclick="cancelAppt('{{ appt.id }}')">Отмени</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        function cancelAppt(id) {
+            if (confirm("Сигурни ли сте, че искате да отмените този час?")) {
+                fetch('/api/cancel_appointment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ appointment_id: id })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    location.reload(); // Презареждане на страницата, за да се махне отписаният час
+                });
+            }
+        }
+    </script>
+
+</body>
+</html>

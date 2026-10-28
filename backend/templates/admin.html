@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>График - Админ Панел</title>
+    <!-- Зареждане на FullCalendar -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        h1 { text-align: center; color: #333; }
+        #calendar-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- НОВОТО МЕНЮ ЗА УПРАВЛЕНИЕ -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <a href="/admin/staff" style="background-color: #2980b9; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px;">Екип</a>
+        <a href="/admin/services" style="background-color: #34495e; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px;">Услуги</a>
+        <a href="/logout" style="background-color: #e74c3c; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px;">Изход</a>
+    </div>
+
+    <h1>Работен график</h1>
+    
+    <div id="calendar-container">
+        <div id='calendar'></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek', // Показва седмицата по часове
+                locale: 'bg', // Български език
+                slotMinTime: '08:00:00', // Начало на работния ден
+                slotMaxTime: '20:00:00', // Край на работния ден
+                allDaySlot: false, // Махаме реда за "Целодневни събития"
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                buttonText: {
+                    today: 'Днес',
+                    month: 'Месец',
+                    week: 'Седмица',
+                    day: 'Ден'
+                },
+                events: '/api/appointments', // Откъде да вземе часовете
+                eventColor: '#8a2be2' // Цвят на събитията
+            });
+            
+            calendar.render();
+        });
+    </script>
+
+</body>
+</html>
