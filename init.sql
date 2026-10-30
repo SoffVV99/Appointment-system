@@ -2,6 +2,7 @@ CREATE TABLE staff (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     role VARCHAR(50) NOT NULL,
+    email VARCHAR(100),
     is_active BOOLEAN DEFAULT TRUE
 );
 

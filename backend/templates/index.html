@@ -2,60 +2,63 @@
 <html lang="bg">
 <head>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#00b894">
+    <meta name="theme-color" content="#111111">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Салон за красота</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fafafa; margin: 0; padding: 20px; color: #111; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 2px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-top: 4px solid #d4af37; }
         .view { display: none; }
         .view.active { display: block; }
-        h1, h2 { color: #2c3e50; text-align: center; }
+        h1, h2 { color: #111; text-align: center; text-transform: uppercase; letter-spacing: 2px; font-weight: 400; }
         
         .staff-grid { display: flex; gap: 20px; justify-content: center; margin-top: 20px; }
-        .staff-card { border: 1px solid #e1e8ed; padding: 20px; border-radius: 10px; cursor: pointer; text-align: center; flex: 1; transition: 0.3s; }
-        .staff-card:hover { border-color: #00b894; box-shadow: 0 4px 10px rgba(0,184,148,0.2); }
-        .staff-card h3 { margin: 0 0 10px 0; color: #2d3436; }
-        .staff-card p { margin: 0; color: #636e72; }
+        .staff-card { border: 1px solid #eee; padding: 25px; border-radius: 4px; cursor: pointer; text-align: center; flex: 1; transition: 0.3s; background: #fff; }
+        .staff-card:hover { border-color: #d4af37; box-shadow: 0 4px 15px rgba(212,175,55,0.15); }
+        .staff-card h3 { margin: 0 0 10px 0; color: #111; letter-spacing: 1px; }
+        .staff-card p { margin: 0; color: #888; font-style: italic; }
 
         .controls { text-align: center; margin-bottom: 20px; }
-        select, input { padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; font-size: 15px; }
+        select, input { padding: 12px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; font-size: 15px; border-radius: 0; background: #fafafa; }
         select { width: 250px; }
-        .schedule-grid { display: flex; gap: 15px; }
-        .day-column { flex: 1; border: 1px solid #e1e8ed; border-radius: 8px; padding: 10px; background: #fafafa; }
-        .day-title { text-align: center; font-weight: bold; margin-bottom: 15px; border-bottom: 2px solid #00b894; padding-bottom: 5px; }
-        .slot-btn { display: block; width: 100%; margin-bottom: 8px; padding: 8px; background: white; border: 1px solid #00b894; color: #00b894; border-radius: 6px; cursor: pointer; }
-        .slot-btn:hover { background: #00b894; color: white; }
-        .btn-nav { background: #636e72; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
-        .btn-submit { width: 100%; padding: 12px; background: #00b894; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px;}
+        select:focus, input:focus { outline: none; border-color: #d4af37; }
+        
+        .schedule-grid { display: flex; gap: 15px; flex-wrap: wrap; }
+        .day-column { flex: 1; border: 1px solid #eee; padding: 15px; background: #fff; min-width: 150px; }
+        .day-title { text-align: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #d4af37; color: #111; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+        
+        .slot-btn { display: block; width: 100%; margin-bottom: 8px; padding: 10px; background: white; border: 1px solid #ccc; color: #111; border-radius: 2px; cursor: pointer; transition: 0.2s; }
+        .slot-btn:hover { background: #111; color: #d4af37; border-color: #111; }
+        
+        .btn-nav { background: transparent; color: #111; border: 1px solid #111; padding: 8px 20px; border-radius: 2px; cursor: pointer; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; transition: 0.2s; }
+        .btn-nav:hover { background: #111; color: #d4af37; }
+        
+        .btn-submit { width: 100%; padding: 15px; background: #111; color: #d4af37; border: 1px solid #111; border-radius: 2px; font-size: 16px; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; margin-top: 15px; transition: 0.3s; }
+        .btn-submit:hover { background: #d4af37; color: #111; border-color: #d4af37; }
+        
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group label { display: block; margin-bottom: 5px; color: #555; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .top-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+        .top-nav a { color: #111; text-decoration: none; padding: 10px 20px; border: 1px solid #111; border-radius: 2px; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; transition: 0.3s; }
+        .top-nav a:hover { background: #111; color: #d4af37; }
     </style>
 </head>
 <body>
 
 <div class="container">
     
-    <!-- ГОРНИ БУТОНИ ЗА НАВИГАЦИЯ -->
-    <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f1f2f6;">
-        <a href="/" style="background: #00b894; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">📅 Запази час</a>
-        <a href="/pricelist" target="_blank" style="background: #34495e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">📋 Ценоразпис</a>
+    <div class="top-nav">
+        <a href="/">Запази час</a>
+        <a href="/pricelist" target="_blank">Ценоразпис</a>
     </div>
 
-    <!-- МЕНЮ С ПОЛЕЗНИ ВРЪЗКИ (Телефон, Instagram) -->
-    <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-        <div>
-            <a href="/" style="text-decoration: none; color: #00b894; font-weight: bold; margin-right: 15px;">🏠 Начало</a>
-            <a href="/pricelist" target="_blank" style="text-decoration: none; color: #2c3e50; font-weight: bold; margin-right: 15px;">📋 Ценоразпис</a>
-        </div>
-        <div style="display: flex; gap: 15px; align-items: center;">
-            <a href="tel:0880000000" style="text-decoration: none; color: #e17055; font-weight: bold;">📞 Обади се</a>
-            <a href="https://instagram.com/tvoiat_profil" target="_blank" style="text-decoration: none; color: #e84393; font-weight: bold;">📸 Instagram</a>
-        </div>
+    <div class="top-nav" style="border-bottom: none; margin-bottom: 20px;">
+        <a href="tel:0896184325" style="border-color: #555; color: #555;">Обади се</a>
+        <a href="https://www.instagram.com/deni.style_?utm_source=ig_web_button_share_sheet&xtok=ZDNlZDc0MzIxNw==" target="_blank" style="border-color: #555; color: #555;">Instagram</a>
     </div>
 
-    <!-- СТЪПКА 1: Избор на специалист -->
     <div id="step-staff" class="view active">
         <img src="/static/logo.jpg" alt="Deni Style Logo" style="max-width: 150px; display: block; margin: 0 auto 15px auto; border-radius: 50%;">
         <h1>Изберете специалист</h1>
@@ -66,8 +69,6 @@
         </div>
     </div>
 
-
-    <!-- СТЪПКА 2: Избор на услуга и час -->
     <div id="step-schedule" class="view">
         <button class="btn-nav" onclick="showStep('step-staff')">← Назад</button>
         <h2 id="selectedStaffName">График</h2>
@@ -79,11 +80,10 @@
         <div id="scheduleContainer" class="schedule-grid" style="display: none;"></div>
     </div>
 
-    <!-- СТЪПКА 3: Резервация -->
     <div id="step-booking" class="view">
         <button class="btn-nav" onclick="showStep('step-schedule')">← Назад</button>
         <h2>Завършване на резервацията</h2>
-        <p id="bookingSummary" style="text-align: center; color: #00b894; font-weight: bold;"></p>
+        <p id="bookingSummary" style="text-align: center; color: #d4af37; font-weight: bold;"></p>
         <form id="finalForm">
             <div class="form-group"><label>Име и фамилия:</label><input type="text" id="clientName" required></div>
             <div class="form-group"><label>Телефон:</label><input type="tel" id="clientPhone" required></div>
@@ -92,7 +92,6 @@
         <div id="responseMessage" style="text-align: center; margin-top: 15px; font-weight: bold;"></div>
     </div>
 
-    <!-- СТЪПКА 4: Отмяна на час -->
     <div id="step-cancel" class="view">
         <button class="btn-nav" onclick="showStep('step-staff')">← Назад</button>
         <h2>Отмяна на резервация</h2>
@@ -100,7 +99,7 @@
             <label>Въведете телефона, с който сте запазили часа:</label>
             <input type="tel" id="cancelPhone" placeholder="напр. 088...">
         </div>
-        <button onclick="findAppointments()" class="btn-submit" style="background: #e17055;">Покажи моите часове</button>
+        <button onclick="findAppointments()" class="btn-submit">Покажи моите часове</button>
         <div id="cancelList" style="margin-top: 20px;"></div>
     </div>
 
@@ -110,23 +109,23 @@
     let selectedStaffId = null;
     let selectedServiceId = null;
     let selectedTime = null;
-    let allServices = []; // Тук пазим всички услуги от базата
+    let allServices = []; 
 
-    // Зареждане на персонала
     fetch('/api/staff').then(r => r.json()).then(data => {
         const grid = document.getElementById('staffList');
         grid.innerHTML = '';
+        if (data.length === 0) {
+            grid.innerHTML = '<p style="color:#d9534f; text-align:center;">Все още няма добавен персонал. Влезте в админ панела (/login), за да добавите!</p>';
+        }
         data.forEach(p => {
             const card = document.createElement('div');
             card.className = 'staff-card';
             card.innerHTML = `<h3>${p.name}</h3><p>${p.role}</p>`;
-            // ПОДАВАМЕ РОЛЯТА (p.role), за да знаем какви услуги предлага
             card.onclick = () => selectStaff(p.id, p.name, p.role);
             grid.appendChild(card);
         });
     });
 
-    // Зареждаме всички услуги еднократно
     fetch('/api/services').then(r => r.json()).then(data => { allServices = data; });
 
     function showStep(stepId) {
@@ -141,11 +140,10 @@
         const select = document.getElementById('serviceSelect');
         select.innerHTML = '<option value="">-- Изберете процедура --</option>';
         
-        // Търсим услугите, които съдържат името на специалиста или неговата роля
         const filteredServices = allServices.filter(s => s.staff_role.includes(name) || s.staff_role.includes(role));
         
         filteredServices.forEach(s => {
-            select.innerHTML += `<option value="${s.id}">[${s.category || 'Общи'}${s.subcategory ? ' / ' + s.subcategory : ''}] ${s.name} - € ${s.price || ''} (${s.duration_minutes} мин)</option>`;
+            select.innerHTML += `<option value="${s.id}">[${s.category || 'Общи'}${s.subcategory && s.subcategory !== 'none' ? ' / ' + s.subcategory : ''}] ${s.name} - € ${s.price || ''} (${s.duration_minutes} мин)</option>`;
         });
         
         document.getElementById('scheduleContainer').style.display = 'none';
@@ -192,7 +190,6 @@
         showStep('step-booking');
     }
 
-    // Резервация на час
     document.getElementById('finalForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const payload = {
@@ -212,7 +209,6 @@
         });
     });
 
-    // Търсене на часове за отмяна
     function findAppointments() {
         const phone = document.getElementById('cancelPhone').value;
         fetch('/api/my_appointments', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({phone}) })
@@ -221,19 +217,19 @@
             const list = document.getElementById('cancelList');
             list.innerHTML = '';
             if(apps.length === 0) {
-                list.innerHTML = '<p style="text-align:center; color:red;">Няма намерени часове за този телефон.</p>';
+                list.innerHTML = '<p style="text-align:center; color:#d9534f;">Няма намерени часове за този телефон.</p>';
                 return;
             }
             apps.forEach(app => {
                 const div = document.createElement('div');
-                div.style = "border: 1px solid #e1e8ed; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #fafafa;";
+                div.style = "border: 1px solid #eee; padding: 15px; margin-bottom: 10px; background: #fff;";
                 const date = new Date(app.start_time).toLocaleString('bg-BG');
                 div.innerHTML = `
                     <div style="float:left;">
                         <strong>${app.service_name}</strong> при ${app.staff_name}<br>
-                        <span style="color:#636e72;">Време: ${date}</span>
+                        <span style="color:#888;">Време: ${date}</span>
                     </div>
-                    <button onclick="cancelAppt(${app.id})" style="float:right; background: #e17055; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer;">Откажи</button>
+                    <button onclick="cancelAppt(${app.id}, this)" style="float:right; background: #111; color: #d4af37; border: 1px solid #d4af37; padding: 10px; border-radius: 2px; cursor: pointer; text-transform: uppercase; font-size: 11px;">Откажи</button>
                     <div style="clear:both;"></div>
                 `;
                 list.appendChild(div);
@@ -241,9 +237,15 @@
         });
     }
 
-    // Отмяна на час
-    function cancelAppt(id) {
-    if(confirm('Сигурни ли сте, че искате да отмените този час?')) {
+    function cancelAppt(id, btnElement) {
+        if (btnElement.innerText.trim().toLowerCase() === "откажи") {
+            btnElement.innerText = "Потвърди?";
+            btnElement.style.background = "#d9534f"; 
+            btnElement.style.color = "white";
+            btnElement.style.borderColor = "#d9534f";
+            return; 
+        }
+
         fetch('/api/cancel', { 
             method: 'POST', 
             headers: {'Content-Type': 'application/json'}, 
@@ -251,41 +253,26 @@
         })
         .then(r => r.json())
         .then(res => {
-            // Намираме или създаваме елемент за съобщението в страницата
             let msgDiv = document.getElementById('cancel-message');
             if (!msgDiv) {
-                // Ако няма такъв div, го създаваме динамично над списъка
                 msgDiv = document.createElement('div');
                 msgDiv.id = 'cancel-message';
-                msgDiv.style.margin = '10px 0';
-                msgDiv.style.padding = '8px';
-                msgDiv.style.fontWeight = 'bold';
-                const container = document.querySelector('#appointments-list') || document.body;
+                msgDiv.style.margin = '15px 0';
+                msgDiv.style.padding = '10px';
+                msgDiv.style.textAlign = 'center';
+                msgDiv.style.border = '1px solid #d4af37';
+                const container = document.querySelector('#cancelList');
                 container.prepend(msgDiv);
             }
-
-            // Показваме съобщението директно в страницата
-            msgDiv.innerText = res.message; // "Часът е отменен успешно!"
-            msgDiv.style.color = 'green';
-            msgDiv.style.backgroundColor = '#e8f5e9';
-            msgDiv.style.borderRadius = '4px';
-
-            // След 2 секунди махаме съобщението и презареждаме списъка
+            msgDiv.innerText = res.message;
+            msgDiv.style.color = '#111';
+            msgDiv.style.backgroundColor = '#fdfbf2';
+            
             setTimeout(() => {
-                msgDiv.innerText = '';
-                msgDiv.style.backgroundColor = 'transparent';
-                findAppointments(); // Презареждаме списъка
-            }, 2000);
+                msgDiv.style.display = 'none';
+                findAppointments(); 
+            }, 2500);
         });
-    }
-}
-        
-    
-</script>
-<script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-            .then(() => console.log('Service Worker е регистриран!'));
     }
 </script>
 </body>

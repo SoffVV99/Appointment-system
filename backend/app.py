@@ -145,8 +145,10 @@ def get_schedule():
                     is_free = False
                     break
             
-            # Пропускаме минали часове, ако денят е днес
-            if is_free and curr_time > datetime.now():
+            # Взимаме точното време в България, за да скрием миналите часове
+            now_bg = datetime.now(BULGARIA_TZ).replace(tzinfo=None)
+            
+            if is_free and curr_time > now_bg:
                 slots.append(curr_time.strftime('%H:%M'))
             
             curr_time += timedelta(minutes=30)
@@ -214,12 +216,19 @@ def book_appointment():
     """
     cur.execute(insert_query, (client_name, client_phone, staff_id, service_id, start_time, end_time))
     
+    # Намираме имейла на фризьора
+    cur.execute('SELECT email FROM staff WHERE id = %s;', (staff_id,))
+    staff_record = cur.fetchone()
+    staff_email = staff_record['email'] if staff_record and 'email' in staff_record else None
+    
     conn.commit()
     cur.close()
     conn.close()
     
+    msg_text = f"🌟 НОВ ЗАПИСАН ЧАС!\n\nКлиент: {client_name}\nТелефон: {client_phone}\nДата и час: {start_time}\nУслуга ID: {service_id}"
+    send_email_notification(msg_text, staff_email)
+    
     return jsonify({'message': 'Часът е записан успешно!'}), 201
-
 
 @app.route('/admin')
 def admin():
@@ -277,25 +286,27 @@ def my_appointments():
     return jsonify(apps)
 
 # Функция за автоматично пращане на имейл при отмяна
-def send_email_notification(text):
+def send_email_notification(text, receiver_email):
     SMTP_SERVER = "smtp.gmail.com"
     SMTP_PORT = 587
-    SENDER_EMAIL = "tvoq.email@gmail.com"        # Имейлът, от който пращаш
-    SENDER_PASSWORD = "tvoata_app_parola"       # Паролата за приложение от Google
-    RECEIVER_EMAIL = "salon.denistyle@gmail.com"  # Имейлът на салона, където да пристига известието
+    SENDER_EMAIL = "tvoq.email@gmail.com"
+    SENDER_PASSWORD = "tvoata_app_parola" 
+    
+    if not receiver_email:
+        receiver_email = "salon.denistyle@gmail.com"
 
     try:
         msg = MIMEMultipart()
         msg['From'] = SENDER_EMAIL
-        msg['To'] = RECEIVER_EMAIL
-        msg['Subject'] = "❌ Отменен час в салон Deni Style"
+        msg['To'] = receiver_email
+        msg['Subject'] = "🌟 Известие за час - Deni Style"
 
         msg.attach(MIMEText(text, 'plain', 'utf-8'))
 
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
         server.login(SENDER_EMAIL, SENDER_PASSWORD)
-        server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, msg.as_string())
+        server.sendmail(SENDER_EMAIL, receiver_email, msg.as_string())
         server.quit()
         print("Имейлът е изпратен успешно!")
     except Exception as e:
@@ -310,7 +321,7 @@ def cancel_appointment():
     
     # 1. Взимаме данните преди да го отменим
     cur.execute('''
-        SELECT a.start_time, s.name as staff_name, srv.name as service_name, a.client_phone 
+        SELECT a.start_time, s.name as staff_name, s.email as staff_email, srv.name as service_name, a.client_phone 
         FROM appointments a
         JOIN staff s ON a.staff_id = s.id
         JOIN services srv ON a.service_id = srv.id
@@ -326,11 +337,13 @@ def cancel_appointment():
     conn.close()
     
     # 3. Пращаме имейла автоматично
+    # 3. Пращаме имейла автоматично
     if appt:
-        msg_text = f"Отменен е следният час в салон Deni Style:\n\nСлужител: {appt['staff_name']}\nУслуга: {appt['service_name']}\nДата и час: {appt['start_time']}\nТелефон на клиент: {appt['client_phone']}"
-        send_email_notification(msg_text)
+        msg_text = f"❌ Отменен е следният час в салон Deni Style:\n\nСлужител: {appt['staff_name']}\nУслуга: {appt['service_name']}\nДата и час: {appt['start_time']}\nТелефон на клиент: {appt['client_phone']}"
+        send_email_notification(msg_text, appt.get('staff_email'))
         
     return jsonify({'message': 'Часът е отменен успешно!'})
+
 
 # Зареждане на PWA файловете
 @app.route('/manifest.json')
@@ -380,7 +393,10 @@ def add_staff():
     data = request.json
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('INSERT INTO staff (name, role) VALUES (%s, %s)', (data['name'], data['role']))
+    
+    cur.execute('ALTER TABLE staff ADD COLUMN IF NOT EXISTS email VARCHAR(100);')
+    cur.execute('INSERT INTO staff (name, role, email) VALUES (%s, %s, %s)', (data['name'], data['role'], data.get('email')))
+    
     conn.commit()
     cur.close()
     conn.close()

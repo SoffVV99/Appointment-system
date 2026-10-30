@@ -7,6 +7,7 @@
     <form id="addStaff" style="margin-bottom: 20px;">
         <input type="text" id="name" placeholder="Име" required style="padding:8px;">
         <input type="text" id="role" placeholder="Длъжност (напр. Фризьор)" required style="padding:8px;">
+        <input type="email" id="email" placeholder="Имейл (по желание)" style="padding:8px;">
         <button type="submit" style="padding:8px 15px; background:#2980b9; color:white; border:none;">Добави</button>
     </form>
     <ul id="list" style="list-style:none; padding:0;"></ul>
@@ -17,7 +18,11 @@
         }
         document.getElementById('addStaff').onsubmit = async (e) => {
             e.preventDefault();
-            await fetch('/api/add_staff', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name: document.getElementById('name').value, role: document.getElementById('role').value}) });
+            await fetch('/api/add_staff', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+    name: document.getElementById('name').value, 
+    role: document.getElementById('role').value,
+    email: document.getElementById('email').value
+}) });
             load();
         };
         async function del(id) { await fetch(`/api/delete_staff/${id}`, {method:'DELETE'}); load(); }
