@@ -84,6 +84,10 @@
         <button class="btn-nav" onclick="showStep('step-schedule')">← Назад</button>
         <h2>Завършване на резервацията</h2>
         <p id="bookingSummary" style="text-align: center; color: #d4af37; font-weight: bold;"></p>
+        <div class="form-group" id="durationFieldGroup" style="display: none;">
+            <label><b>Продължителност в минути (само за персонал):</b></label>
+            <input type="number" id="customDuration" placeholder="Остави празно за стандартното време на процедурата" min="15" max="480" step="5">
+        </div>
         <form id="finalForm">
             <div class="form-group"><label>Име и фамилия:</label><input type="text" id="clientName" required></div>
             <div class="form-group"><label>Телефон:</label><input type="tel" id="clientPhone" required></div>
@@ -110,6 +114,16 @@
     let selectedServiceId = null;
     let selectedTime = null;
     let allServices = []; 
+    let isStaffLoggedIn = false;
+
+    fetch('/api/info').then(r => r.json()).then(info => {
+        isStaffLoggedIn = info.is_staff_logged_in;
+        if (info.phone) {
+            document.querySelectorAll('a[href^="tel:"]').forEach(btn => {
+                btn.href = 'tel:' + info.phone.replace(/\s+/g, '');
+            });
+        }
+    });
 
     fetch('/api/staff').then(r => r.json()).then(data => {
         const grid = document.getElementById('staffList');
@@ -187,6 +201,11 @@
     function openBookingForm(date, time) {
         selectedTime = `${date}T${time}`;
         document.getElementById('bookingSummary').innerText = `Избран час: ${date} от ${time} ч.`;
+        
+        const durGroup = document.getElementById('durationFieldGroup');
+        if (durGroup) {
+            durGroup.style.display = isStaffLoggedIn ? 'block' : 'none';
+        }
         showStep('step-booking');
     }
 
@@ -195,8 +214,15 @@
         const payload = {
             client_name: document.getElementById('clientName').value,
             client_phone: document.getElementById('clientPhone').value,
-            staff_id: selectedStaffId, service_id: selectedServiceId, start_time: selectedTime
+            staff_id: selectedStaffId, 
+            service_id: selectedServiceId, 
+            start_time: selectedTime
         };
+
+        if (isStaffLoggedIn) {
+            payload.custom_duration = document.getElementById('customDuration').value;
+        }
+
         fetch('/api/book', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
         .then(r => r.json().then(res => ({status: r.status, body: res})))
         .then(res => {
@@ -205,7 +231,7 @@
                 msg.style.color = "green"; msg.innerText = "Успешна резервация!";
                 document.getElementById('finalForm').style.display = 'none';
                 setTimeout(() => location.reload(), 3000);
-            } else { msg.style.color = "red"; msg.innerText = res.body.error; }
+            } else { msg.style.color = "red"; msg.innerText = res.body.error || "Грешка при запазване"; }
         });
     });
 
@@ -223,7 +249,7 @@
             apps.forEach(app => {
                 const div = document.createElement('div');
                 div.style = "border: 1px solid #eee; padding: 15px; margin-bottom: 10px; background: #fff;";
-                const date = new Date(app.start_time).toLocaleString('bg-BG');
+                const date = app.start_time;
                 div.innerHTML = `
                     <div style="float:left;">
                         <strong>${app.service_name}</strong> при ${app.staff_name}<br>

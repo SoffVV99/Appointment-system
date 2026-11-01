@@ -3,66 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>График - Админ Панел</title>
-    <!-- Зареждане на FullCalendar -->
+    <title>График - Работен Панел</title>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
-        h1 { text-align: center; color: #333; }
+        h1, h3 { text-align: center; color: #333; margin: 5px 0; }
         #calendar-container {
-            max-width: 1000px;
-            margin: 0 auto;
+            max-width: 1400px; /* Разширен календар */
+            margin: 15px auto;
             background: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
         }
+        /* Прави редовете за часовете по-високи */
+        .fc-timegrid-slot {
+            height: 3.2em !important;
+        }
+        /* Позволява на текста в квадратчетата да се пренася на няколко реда и да се вижда целият */
+        .fc-v-event .fc-event-main-frame {
+            flex-direction: column !important;
+        }
+        .fc-v-event .fc-event-title-container {
+            flex-grow: 1;
+            white-space: normal !important;
+            overflow: visible !important;
+        }
+        .fc-v-event .fc-event-title {
+            font-size: 12px !important;
+            line-height: 1.25 !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+        }
     </style>
 </head>
 <body>
 
-    <!-- НОВОТО МЕНЮ ЗА УПРАВЛЕНИЕ -->
     <div style="text-align: center; margin-bottom: 20px;">
+    <a href="/" style="background-color: #27ae60; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px;">+ Запиши час (Извънреден)</a>
+    {% if session.get('role') == 'admin' %}
         <a href="/admin/staff" style="background-color: #2980b9; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px;">Екип</a>
         <a href="/admin/services" style="background-color: #34495e; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px;">Услуги</a>
-        <a href="/logout" style="background-color: #e74c3c; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px;">Изход</a>
-    </div>
+        <a href="/admin/settings" style="background-color: #8e44ad; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px;">⚙️ Адрес и Работно време</a>
+    {% endif %}
+    <button onclick="enableNotifications()" style="background-color: #f39c12; color: white; padding: 8px 15px; border: none; border-radius: 5px; margin-right: 10px; cursor: pointer;">🔔 Включи известия</button>
+    <a href="/logout" style="background-color: #e74c3c; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px;">Изход</a>
+</div>
 
-    <h1>Работен график</h1>
+    <h1>Работен график: {{ session.get('user_name', 'Администратор') }}</h1>
     
     <div id="calendar-container">
         <div id='calendar'></div>
     </div>
 
     <script>
+        let calendar;
+        let knownAppointmentIds = new Set();
+        let firstLoad = true;
+
+        function enableNotifications() {
+            if (!window.isSecureContext) {
+                alert("Браузърът изисква HTTPS връзка за системни известия. В момента ще получавате звуков сигнал и изскачащ прозорец директно на екрана при нов час!");
+                return;
+            }
+            if (!("Notification" in window)) {
+                alert("Този браузър не поддържа системни известия.");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    alert("✅ Известията са активирани успешно!");
+                    new Notification("Deni Style", { body: "Тестово известие - всичко работи!" });
+                } else {
+                    alert("❌ Известията са блокирани от настройките на браузъра (иконката до адреса на сайта горе).");
+                }
+            });
+        }
+
+        function playAlertSound() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.3);
+        }
+
+        async function checkNewAppointments() {
+            try {
+                const res = await fetch('/api/appointments');
+                const events = await res.json();
+                
+                events.forEach(ev => {
+                    if (!knownAppointmentIds.has(ev.id)) {
+                        knownAppointmentIds.add(ev.id);
+                        if (!firstLoad) {
+                            playAlertSound();
+                            calendar.refetchEvents();
+                            if ("Notification" in window && Notification.permission === "granted") {
+                                new Notification("🌟 Нов записан час!", {
+                                    body: `${ev.title} (${ev.start.replace('T', ' ')})`,
+                                    icon: "/static/logo.jpg"
+                                });
+                            } else {
+                                alert(`🌟 НОВ ЗАПИСАН ЧАС!\n${ev.title}\nЧас: ${ev.start.replace('T', ' ')}`);
+                            }
+                        }
+                    }
+                });
+                firstLoad = false;
+            } catch (e) {
+                console.error("Грешка при проверка за нови часове:", e);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek', // Показва седмицата по часове
-                locale: 'bg', // Български език
-                slotMinTime: '08:00:00', // Начало на работния ден
-                slotMaxTime: '20:00:00', // Край на работния ден
-                allDaySlot: false, // Махаме реда за "Целодневни събития"
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                locale: 'bg',
+                slotMinTime: '08:00:00',
+                slotMaxTime: '20:00:00',
+                allDaySlot: false,
                 timeZone: 'Europe/Sofia',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
-                buttonText: {
-                    today: 'Днес',
-                    month: 'Месец',
-                    week: 'Седмица',
-                    day: 'Ден'
+                buttonText: { today: 'Днес', month: 'Месец', week: 'Седмица', day: 'Ден' },
+                events: '/api/appointments',
+                eventColor: '#8a2be2',
+                eventDidMount: function(info) {
+                    info.el.title = info.event.title;
                 },
-                events: '/api/appointments', // Откъде да вземе часовете
-                eventColor: '#8a2be2' // Цвят на събитията
+                eventClick: function(info) {
+                    if (confirm(`Искате ли да отмените часа на: ${info.event.title}?`)) {
+                        fetch('/api/cancel', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({id: info.event.id})
+                        }).then(() => calendar.refetchEvents());
+                    }
+                }
             });
             
             calendar.render();
+            checkNewAppointments();
+            setInterval(checkNewAppointments, 20000); // Проверява на всеки 20 секунди
         });
     </script>
-
 </body>
 </html>

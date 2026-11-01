@@ -4,25 +4,36 @@
 <body style="font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto;">
     <a href="/admin">← Назад към графика</a>
     <h2>Управление на екип</h2>
-    <form id="addStaff" style="margin-bottom: 20px;">
-        <input type="text" id="name" placeholder="Име" required style="padding:8px;">
+    <form id="addStaff" style="margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap;">
+        <input type="text" id="name" placeholder="Име (напр. Деница)" required style="padding:8px;">
         <input type="text" id="role" placeholder="Длъжност (напр. Фризьор)" required style="padding:8px;">
-        <input type="email" id="email" placeholder="Имейл (по желание)" style="padding:8px;">
-        <button type="submit" style="padding:8px 15px; background:#2980b9; color:white; border:none;">Добави</button>
+        <input type="email" id="email" placeholder="Имейл (за вход и Google Календар)" required style="padding:8px;">
+        <input type="text" id="password" placeholder="Парола за вход" required style="padding:8px;">
+        <button type="submit" style="padding:8px 15px; background:#2980b9; color:white; border:none; cursor:pointer;">Добави</button>
     </form>
     <ul id="list" style="list-style:none; padding:0;"></ul>
     <script>
         async function load() {
             const r = await fetch('/api/staff'); const d = await r.json();
-            document.getElementById('list').innerHTML = d.map(s => `<li style="padding:10px; border-bottom:1px solid #ccc;">${s.name} - ${s.role} <button onclick="del(${s.id})" style="float:right; background:#e74c3c; color:white; border:none; padding:5px;">Изтрий</button></li>`).join('');
+            document.getElementById('list').innerHTML = d.map(s => `
+                <li style="padding:10px; border-bottom:1px solid #ccc;">
+                    <b>${s.name}</b> - ${s.role} (${s.email || 'няма имейл'}) 
+                    <button onclick="del(${s.id})" style="float:right; background:#e74c3c; color:white; border:none; padding:5px; cursor:pointer;">Изтрий</button>
+                </li>`).join('');
         }
         document.getElementById('addStaff').onsubmit = async (e) => {
             e.preventDefault();
-            await fetch('/api/add_staff', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
-    name: document.getElementById('name').value, 
-    role: document.getElementById('role').value,
-    email: document.getElementById('email').value
-}) });
+            await fetch('/api/add_staff', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body: JSON.stringify({
+                    name: document.getElementById('name').value, 
+                    role: document.getElementById('role').value,
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value
+                }) 
+            });
+            document.getElementById('addStaff').reset();
             load();
         };
         async function del(id) { await fetch(`/api/delete_staff/${id}`, {method:'DELETE'}); load(); }

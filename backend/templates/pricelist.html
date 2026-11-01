@@ -1,83 +1,228 @@
 <!DOCTYPE html>
 <html lang="bg">
-<head><meta charset="UTF-8"><title>Ценоразпис</title></head>
-<body style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 40px; text-align: center;">
-    <img src="/static/logo.jpg" alt="Лого" style="max-width: 120px; border-radius: 50%;">
-    <h2>Ценоразпис Deni Style</h2>
-    <div id="list" style="text-align: left; margin: 30px 0;"></div>
-    <div style="margin-top: 40px; border-top: 2px solid #000; padding-top: 20px;">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.denistyle.bg" alt="QR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Луксозен ценоразпис | Deni Style</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #111111;
+            color: #f5f5f5;
+            max-width: 800px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+        .pricelist-container {
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid #d4af37;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        /* Воден знак с логото на фона */
+        .pricelist-container::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            background: url('/static/logo.jpg') no-repeat center center;
+            background-size: contain;
+            opacity: 0.04;
+            pointer-events: none;
+        }
+        .header-section {
+            text-align: center;
+            margin-bottom: 35px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 25px;
+        }
+        .logo-img {
+            max-width: 130px;
+            border-radius: 50%;
+            border: 2px solid #d4af37;
+            margin-bottom: 15px;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+        h2 {
+            color: #d4af37;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 10px 0;
+            font-weight: 400;
+        }
+        #salonAddress {
+            color: #aaa;
+            font-size: 14px;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+        .staff-section {
+            margin-bottom: 40px;
+        }
+        .staff-title {
+            color: #d4af37;
+            border-bottom: 1px solid #d4af37;
+            padding-bottom: 8px;
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        .category-title {
+            color: #dfbf6b;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .subcategory-title {
+            color: #b8860b;
+            margin-left: 15px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .service-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 15px;
+            border-bottom: 1px dotted #333;
+            padding-bottom: 8px;
+        }
+        .service-name {
+            color: #e0e0e0;
+        }
+        .service-duration {
+            color: #888;
+            font-size: 13px;
+            margin-left: 8px;
+        }
+        .service-price {
+            color: #2ecc71;
+            font-weight: bold;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+        .footer-section {
+            margin-top: 40px;
+            border-top: 1px solid #333;
+            padding-top: 25px;
+            text-align: center;
+        }
+        .footer-section img {
+            width: 120px;
+            height: 120px;
+            border-radius: 4px;
+            border: 1px solid #d4af37;
+            background: white;
+            padding: 5px;
+        }
+        .footer-section p {
+            color: #bbb;
+            font-size: 14px;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+        .footer-section b {
+            color: #d4af37;
+        }
+    </style>
+</head>
+<body>
+
+<div class="pricelist-container">
+    <div class="header-section">
+        <img src="/static/logo.jpg" alt="Deni Style Logo" class="logo-img">
+        <h2>Beauty Studio Deni Style</h2>
+        <div id="salonAddress">Зареждане на адрес...</div>
+    </div>
+
+    <div id="list">Зареждане на ценоразпис...</div>
+
+    <div class="footer-section">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.denistyle.bg" alt="QR Code">
         <p>Сканирай за запазване на час онлайн:<br><b>www.denistyle.bg</b></p>
     </div>
-    <script>
-        async function loadPricelist() {
-            const staffRes = await fetch('/api/staff');
-            const staffList = await staffRes.json();
-            
-            const servicesRes = await fetch('/api/services');
-            const servicesList = await servicesRes.json();
+</div>
 
-            let html = '';
-
-            staffList.forEach(person => {
-                // Взимаме услугите за конкретния специалист
-                const personServices = servicesList.filter(s => s.staff_role.includes(person.role));
-
-                if (personServices.length > 0) {
-                    // Главно заглавие: Име - Роля (напр. Деница - Фризьор)
-                    html += `
-                        <div style="margin-bottom: 40px; text-align: left;">
-                            <h2 style="border-bottom: 3px solid #00b894; padding-bottom: 5px; color: #2c3e50; margin-bottom: 15px;">${person.name} - ${person.role}</h2>
-                    `;
-
-                    // Групиране по категории и подкатегории
-                    const categories = {};
-                    personServices.forEach(s => {
-                        const cat = s.category || 'Други';
-                        if (!categories[cat]) categories[cat] = {};
-
-                        const subcat = s.subcategory || 'none';
-                        if (!categories[cat][subcat]) categories[cat][subcat] = [];
-
-                        categories[cat][subcat].push(s);
-                    });
-
-                    // Извеждане на категориите
-                    for (const cat in categories) {
-                        html += `<h3 style="color: #2980b9; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 3px;">${cat}:</h3>`;
-
-                        // Извеждане на подкатегориите
-                        for (const subcat in categories[cat]) {
-                            let indent = '15px'; // Отстъп, ако няма подкатегория
-
-                            if (subcat !== 'none') {
-                                html += `<h4 style="color: #8e44ad; margin-left: 15px; margin-top: 10px; margin-bottom: 5px;">${subcat}:</h4>`;
-                                indent = '30px'; // По-голям отстъп за услугите вътре в подкатегорията
-                            }
-
-                            // Извеждане на самите услуги
-                            const services = categories[cat][subcat];
-                            services.forEach(s => {
-                                html += `
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-left: ${indent}; margin-bottom: 8px; font-size: 16px; border-bottom: 1px dotted #f1f2f6; padding-bottom: 5px;">
-                                        <span>
-                                            ${s.name} <small style="color:#666;">(${s.duration_minutes} мин)</small>
-                                        </span>
-                                        <b style="white-space: nowrap; color: #27ae60;">€ ${s.price}</b>
-                                    </div>
-                                `;
-                            });
-                        }
-                    }
-
-                    html += `</div>`;
-                }
-            });
-
-            document.getElementById('list').innerHTML = html;
+<script>
+    async function loadPricelist() {
+        // Зареждаме адреса на салона
+        try {
+            const infoRes = await fetch('/api/info');
+            const infoData = await infoRes.json();
+            document.getElementById('salonAddress').innerText = infoData.address;
+        } catch(e) {
+            document.getElementById('salonAddress').innerText = "";
         }
 
-        loadPricelist();
-    </script>
+        const staffRes = await fetch('/api/staff');
+        const staffList = await staffRes.json();
+        
+        const servicesRes = await fetch('/api/services');
+        const servicesList = await servicesRes.json();
+
+        let html = '';
+
+        staffList.forEach(person => {
+            const personServices = servicesList.filter(s => s.staff_role.includes(person.role) || s.staff_role.includes(person.name));
+
+            if (personServices.length > 0) {
+                html += `<div class="staff-section">`;
+                html += `<div class="staff-title">${person.name} — <span style="font-size:15px; color:#aaa;">${person.role}</span></div>`;
+
+                const categories = {};
+                personServices.forEach(s => {
+                    const cat = s.category || 'Общи услуги';
+                    if (!categories[cat]) categories[cat] = {};
+
+                    const subcat = s.subcategory || 'none';
+                    if (!categories[cat][subcat]) categories[cat][subcat] = [];
+
+                    categories[cat][subcat].push(s);
+                });
+
+                for (const cat in categories) {
+                    html += `<div class="category-title">${cat}</div>`;
+
+                    for (const subcat in categories[cat]) {
+                        let indent = '0px';
+                        if (subcat !== 'none') {
+                            html += `<div class="subcategory-title">${subcat}:</div>`;
+                            indent = '15px';
+                        }
+
+                        const services = categories[cat][subcat];
+                        services.forEach(s => {
+                            html += `
+                                <div class="service-row" style="margin-left: ${indent};">
+                                    <span class="service-name">
+                                        ${s.name} <span class="service-duration">(${s.duration_minutes} мин)</span>
+                                    </span>
+                                    <span class="service-price">€ ${s.price}</span>
+                                </div>
+                            `;
+                        });
+                    }
+                }
+                html += `</div>`;
+            }
+        });
+
+        document.getElementById('list').innerHTML = html || '<p style="text-align:center; color:#888;">Все още няма въведени услуги.</p>';
+    }
+
+    loadPricelist();
+</script>
+
 </body>
 </html>

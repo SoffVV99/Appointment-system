@@ -1,15 +1,20 @@
 {
-  "name": "Deni Style Admin",
-  "short_name": "DeniStyle",
-  "start_url": "/admin/appointments",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#00b894",
-  "icons": [
-    {
-      "src": "/static/logo.jpg",
-      "sizes": "192x192",
-      "type": "image/jpeg"
-    }
-  ]
+    "name": "Beauty Studio Deni Style",
+    "short_name": "DeniStyle",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#111111",
+    "theme_color": "#d4af37",
+    "icons": [
+        {
+            "src": "https://denistyle.bg/static/logo-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://denistyle.bg/static/logo-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
 }
