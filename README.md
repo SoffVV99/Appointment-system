@@ -79,7 +79,7 @@ classDiagram
     Service --> Appointment : включва се в
     Staff o-- Service : извършва
     SalonConfig ..> Appointment : определя график
-    ```
+```
 
 ## 4. Реализирани CRUD операции и REST API Ендпойнти
 
