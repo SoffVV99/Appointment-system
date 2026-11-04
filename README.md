@@ -96,3 +96,27 @@ classDiagram
 | `POST` | `/api/book` | **Create** | Създава нова резервация, праща имейл и записва в Google Calendar. |
 | `POST` | `/api/cancel` | **Update** | Променя статуса на резервацията на `cancelled` и уведомява екипа. |
 | `POST` | `/admin/settings` | **Update** | Обновява конфигурацията за адрес, телефон и работно време. |
+
+---
+
+## 5. Сигурност и Конфигурация (`.env`)
+Всички чувствителни данни (пароли за базата данни, администраторски пароли, SMTP пароли за приложения и частни ключове за Google Cloud API) са изнесени извън сорс кода във файл `.env` и са изключени от Git хранилището чрез `.gitignore`.
+
+Примерна структура на `.env` файла:
+```env
+ADMIN_PASSWORD=your_admin_password
+SENDER_EMAIL=your_email@gmail.com
+SENDER_PASSWORD=your_16_char_app_password
+SECRET_KEY=your_secret_flask_key
+POSTGRES_PASSWORD=secretpassword
+
+## 6. Инструкции за стартиране и Достъп до услугите
+
+1. **Стартиране на контейнерите чрез Docker Compose:**
+   `docker-compose up --build -d`
+
+2. **Достъп до услугите и портове:**
+   * **Уеб приложение (Клиентска част):** `http://localhost` (Продукционен адрес: `https://denistyle.bg`)
+   * **Административен панел и график:** `http://localhost/admin` (вход през `/login`)
+   * **Наблюдение на ресурсите (Glances):** `http://localhost:61208`
+   * **Управление на БД (pgAdmin 4):** `http://localhost:5050`
