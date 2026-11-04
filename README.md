@@ -33,7 +33,7 @@ graph LR
     Glances[Glances Monitoring :61208] -. Наблюдение .-> Backend
     ```
 
-```
+```mermaid
     classDiagram
     class SalonConfig {
         +String salon_address
@@ -106,7 +106,7 @@ graph LR
     SalonConfig "1" ..> "0..*" Appointment : определя работно време за >
 
     ---
-```
+    ```
 
 ## 4. Реализирани CRUD операции и REST API Ендпойнти
 
