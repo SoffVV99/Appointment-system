@@ -33,17 +33,14 @@ graph LR
     Glances[Glances Monitoring :61208] -. Наблюдение .-> Backend
     ```
 
+## 3. UML Клас диаграма
+Диаграмата представя основните класове и обекти в системата:
+
 ```mermaid
-    classDiagram
+classDiagram
     class SalonConfig {
         +String salon_address
         +String salon_phone
-        +String weekday_open
-        +String weekday_close
-        +String sat_open
-        +String sat_close
-        +String sun_open
-        +String sun_close
         +load_config() Dict
         +save_config(data) void
     }
@@ -53,12 +50,9 @@ graph LR
         +String name
         +String role
         +String email
-        +String password
-        +bool is_active
         +get_staff() List
         +add_staff(data) bool
-        +delete_staff(staff_id) bool
-        +login(username, password) Session
+        +delete_staff(id) bool
     }
 
     class Service {
@@ -66,46 +60,25 @@ graph LR
         +String name
         +int duration_minutes
         +String price
-        +String category
-        +String subcategory
-        +String staff_role
         +get_services() List
         +add_service(data) bool
-        +edit_service(service_id, data) bool
-        +delete_service(service_id) bool
+        +delete_service(id) bool
     }
 
     class Appointment {
         +int id
         +String client_name
         +String client_phone
-        +int staff_id
-        +int service_id
         +DateTime start_time
         +DateTime end_time
-        +String status
-        +get_schedule(staff_id, service_id, start_date) Dict
+        +get_schedule() Dict
         +book_appointment(data) Response
-        +cancel_appointment(app_id) Response
-        +my_appointments(phone) List
-        +get_appointments() List
     }
 
-    class NotificationService {
-        +String sender_email
-        +String sender_password
-        + bool google_api_available
-        +send_email_notification(subject, text, receiver_email) void
-        +add_to_google_calendar(summary, description, start_dt, end_dt, staff_email) void
-    }
-
-    Staff "1" --> "0..*" Appointment : изпълнява >
-    Service "1" --> "0..*" Appointment : включва се в >
-    Staff "1..*" o-- "0..*" Service : извършва (по роля) >
-    Appointment "1" *-- "1" NotificationService : задейства >
-    SalonConfig "1" ..> "0..*" Appointment : определя работно време за >
-
-    ---
+    Staff --> Appointment : изпълнява
+    Service --> Appointment : включва се в
+    Staff o-- Service : извършва
+    SalonConfig ..> Appointment : определя график
     ```
 
 ## 4. Реализирани CRUD операции и REST API Ендпойнти
