@@ -31,7 +31,7 @@ graph LR
     Backend -- SMTP :587 --> Gmail[Gmail SMTP Server]
     Backend -- REST API --> GCal[Google Calendar API]
     Glances[Glances Monitoring :61208] -. Наблюдение .-> Backend
-    ```
+```
 
 ## 3. UML Клас диаграма
 Диаграмата представя основните класове и обекти в системата:
