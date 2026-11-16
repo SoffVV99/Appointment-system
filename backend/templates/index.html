@@ -24,6 +24,9 @@
         select { width: 250px; }
         select:focus, input:focus { outline: none; border-color: #d4af37; }
         
+        .date-nav { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .date-nav input[type="date"] { width: 170px; padding: 8px 12px; cursor: pointer; }
+
         .schedule-grid { display: flex; gap: 15px; flex-wrap: wrap; }
         .day-column { flex: 1; border: 1px solid #eee; padding: 15px; background: #fff; min-width: 150px; }
         .day-title { text-align: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #d4af37; color: #111; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
@@ -76,6 +79,13 @@
             <select id="serviceSelect" onchange="loadSchedule()">
                 <option value="">-- Изберете процедура --</option>
             </select>
+            
+            <!-- Навигация по дати и седмици -->
+            <div class="date-nav">
+                <button type="button" class="btn-nav" onclick="changeWeek(-7)">« -7 дни</button>
+                <input type="date" id="startDatePicker" onchange="loadSchedule()">
+                <button type="button" class="btn-nav" onclick="changeWeek(7)">+7 дни »</button>
+            </div>
         </div>
         <div id="scheduleContainer" class="schedule-grid" style="display: none;"></div>
     </div>
@@ -116,8 +126,15 @@
     let allServices = []; 
     let isStaffLoggedIn = false;
 
+    const todayStr = new Date().toISOString().split("T")[0];
+    const datePicker = document.getElementById('startDatePicker');
+    datePicker.value = todayStr;
+
     fetch('/api/info').then(r => r.json()).then(info => {
         isStaffLoggedIn = info.is_staff_logged_in;
+        if (!isStaffLoggedIn) {
+            datePicker.min = todayStr;
+        }
         if (info.phone) {
             document.querySelectorAll('a[href^="tel:"]').forEach(btn => {
                 btn.href = 'tel:' + info.phone.replace(/\s+/g, '');
@@ -164,6 +181,18 @@
         showStep('step-schedule');
     }
 
+    function changeWeek(days) {
+        let current = new Date(datePicker.value || todayStr);
+        current.setDate(current.getDate() + days);
+        const newDateStr = current.toISOString().split("T")[0];
+        if (!isStaffLoggedIn && newDateStr < todayStr) {
+            datePicker.value = todayStr;
+        } else {
+            datePicker.value = newDateStr;
+        }
+        loadSchedule();
+    }
+
     function loadSchedule() {
         selectedServiceId = document.getElementById('serviceSelect').value;
         const container = document.getElementById('scheduleContainer');
@@ -171,7 +200,7 @@
 
         container.style.display = 'flex';
         container.innerHTML = '<p style="text-align:center; width:100%;">Зареждане на часове...</p>';
-        const startDateStr = new Date().toISOString().split("T")[0];
+        const startDateStr = datePicker.value || todayStr;
 
         fetch(`/api/schedule?staff_id=${selectedStaffId}&service_id=${selectedServiceId}&start_date=${startDateStr}`)
             .then(r => r.json())

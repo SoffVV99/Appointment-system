@@ -219,7 +219,7 @@ def get_schedule():
             if is_free and (curr_time > now_bg or is_staff_logged):
                 slots.append(curr_time.strftime('%H:%M'))
             
-            curr_time += timedelta(minutes=30)
+            curr_time += timedelta(minutes=15 if is_staff_logged else 30)
         
         schedule[day_str] = slots
 
