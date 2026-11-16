@@ -236,6 +236,14 @@ def book_appointment():
     service_id = data.get('service_id')
     start_time_str = data.get('start_time')
 
+    if not client_name:
+        return jsonify({'error': 'Моля въведете име на клиента!'}), 400
+
+    clean_name = client_name.strip()
+
+    if not clean_name or not re.search(r'[А-Яа-яA-Za-z]', clean_name) or not re.match(r'^[А-Яа-яA-Za-z0-9\s\-\.\']+$', clean_name):
+        return jsonify({'error': 'Името трябва да съдържа поне една буква и валидни символи!'}), 400
+
     is_staff = bool(session.get('logged_in'))
 
     try:
